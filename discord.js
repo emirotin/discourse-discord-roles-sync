@@ -1,8 +1,10 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
 
-client.on("ready", () => {
+client.on("ready", async () => {
   console.log(`Logged in as ${client.user.tag}!`);
+  const app = await client.fetchApplication();
+  console.log(app);
   client.destroy();
 });
 
