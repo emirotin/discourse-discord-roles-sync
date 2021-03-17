@@ -1,0 +1,22 @@
+{
+  "name": "forum-groups-sync",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "bufferutil": "^4.0.3",
+    "discord.js": "^12.5.1",
+    "dotenv": "^8.2.0",
+    "erlpack": "discord/erlpack",
+    "knex": "^0.95.2",
+    "utf-8-validate": "^5.0.4",
+    "zlib-sync": "^0.1.7"
+  }
+}
