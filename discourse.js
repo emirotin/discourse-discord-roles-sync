@@ -3,7 +3,7 @@ const knex = require("knex");
 
 let db, headers, host;
 
-exports.connect = ({ dbConnection, apiKey, apiHost }) => {
+exports.connect = ({ dbConnectionString, apiKey, apiHost }) => {
   headers = {
     "Api-Key": apiKey,
     "Api-Username": "system",
@@ -11,7 +11,7 @@ exports.connect = ({ dbConnection, apiKey, apiHost }) => {
   host = apiHost;
   db = knex({
     connection: {
-      ...dbConnection,
+      connectionString: dbConnectionString,
       ssl: { rejectUnauthorized: false },
     },
     client: "pg",
