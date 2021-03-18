@@ -24,7 +24,7 @@ const groupNamePrefix = "discord_";
 
 const main = async () => {
   discourse.connect({
-    dbConnectionString: process.env.DATABASE,
+    dbConnectionString: process.env.DATABASE_URL,
     apiKey: process.env.DISCOURSE_API_KEY,
     apiHost: process.env.DISCOURSE_HOST,
   });
