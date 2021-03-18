@@ -1,23 +1,21 @@
 const axios = require("axios");
 const knex = require("knex");
 
-const db = knex({
-  connection: {
-    host: process.env.DISCOURSE_DB_HOST,
-    user: process.env.DISCOURSE_DB_USER,
-    password: process.env.DISCOURSE_DB_PASSWORD,
-    database: process.env.DISCOURSE_DB_NAME,
-    ssl: { rejectUnauthorized: false },
-  },
-  client: "pg",
-});
+let db, headers, host;
 
-const apiKey = process.env.DISCOURSE_API_KEY;
-const host = process.env.DISCOURSE_HOST;
-
-const headers = {
-  "Api-Key": apiKey,
-  "Api-Username": "system",
+exports.connect = ({ dbConnection, apiKey, apiHost }) => {
+  headers = {
+    "Api-Key": apiKey,
+    "Api-Username": "system",
+  };
+  host = apiHost;
+  db = knex({
+    connection: {
+      ...dbConnection,
+      ssl: { rejectUnauthorized: false },
+    },
+    client: "pg",
+  });
 };
 
 exports.request = async (options) => {

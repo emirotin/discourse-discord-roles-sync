@@ -3,13 +3,13 @@ const client = new Discord.Client();
 
 const slugify = require("@sindresorhus/slugify");
 
-exports.connect = () =>
+exports.connect = (guildId, botToken) =>
   new Promise((resolve) => {
     client.once("ready", async () => {
-      const guild = await client.guilds.fetch(process.env.DISCORD_GUILD_ID);
+      const guild = await client.guilds.fetch(guildId);
       resolve({ client, guild });
     });
-    client.login(process.env.DISCORD_BOT_TOKEN);
+    client.login(botToken);
   });
 
 exports.fetchMembers = async (guild) => {

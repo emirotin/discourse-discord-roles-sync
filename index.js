@@ -23,10 +23,22 @@ const groupNamePrefix = "discord_";
 */
 
 const main = async () => {
-  const {
-    client: discordClient,
-    guild: discordGuild,
-  } = await discord.connect();
+  discourse.connect({
+    dbConnection: {
+      host: process.env.DISCOURSE_DB_HOST,
+      user: process.env.DISCOURSE_DB_USER,
+      password: process.env.DISCOURSE_DB_PASSWORD,
+      database: process.env.DISCOURSE_DB_NAME,
+      ssl: { rejectUnauthorized: false },
+    },
+    apiKey: process.env.DISCOURSE_API_KEY,
+    apiHost: process.env.DISCOURSE_HOST,
+  });
+
+  const { client: discordClient, guild: discordGuild } = await discord.connect(
+    process.env.DISCORD_GUILD_ID,
+    process.env.DISCORD_BOT_TOKEN
+  );
 
   const {
     discordMembers,
