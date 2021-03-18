@@ -35,8 +35,5 @@ exports.fetchRoles = async (guild) => {
       name: slugify(name, { separator: "_" }),
       isDeleted: deleted,
     }))
-    .filter(({ isDeleted }) => !isDeleted)
-    .reduce((acc, role) => {
-      acc[role.id] = role;
-    }, {});
+    .filter(({ isDeleted }) => !isDeleted);
 };
