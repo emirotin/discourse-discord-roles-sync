@@ -10,12 +10,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@sindresorhus/slugify": "^1.1.0",
     "axios": "^0.21.1",
+    "bluebird": "^3.7.2",
     "bufferutil": "^4.0.3",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
     "erlpack": "discord/erlpack",
     "knex": "^0.95.2",
+    "pg": "^8.5.1",
     "utf-8-validate": "^5.0.4",
     "zlib-sync": "^0.1.7"
   }
