@@ -4,7 +4,7 @@ const Promise = require("bluebird");
 
 const discourse = require("./discourse");
 const discord = require("./discord");
-const { symDiff } = require("./util");
+const { symDiff, diff } = require("./util");
 
 const groupNamePrefix = "discord_";
 
@@ -20,6 +20,7 @@ const groupNamePrefix = "discord_";
   - find users that need it added
   - remove as needed
   - add as needed
+8) sync real names for users who have them different
 */
 
 const main = async () => {
@@ -66,12 +67,14 @@ const main = async () => {
     groupsToCreate.map((g) => g.name).join(", ") || "none"
   );
 
-  await Promise.mapSeries(groupsToRemove, ({ id }) =>
-    discourse.deleteGroup(id)
-  );
-  await Promise.mapSeries(groupsToCreate, ({ name }) =>
-    discourse.createGroup(`${groupNamePrefix}${name}`)
-  );
+  await Promise.mapSeries(groupsToRemove, ({ id }) => {
+    console.log(`Deleting Discourse group ${id}`);
+    discourse.deleteGroup(id);
+  });
+  await Promise.mapSeries(groupsToCreate, ({ name }) => {
+    console.log(`Creating Discourse group ${name}`);
+    return discourse.createGroup(`${groupNamePrefix}${name}`);
+  });
 
   await Promise.mapSeries(discordRoles, async ({ id, name }) => {
     const roleMembers = discordMembers
@@ -94,6 +97,9 @@ const main = async () => {
       arr2: targetUsers,
     });
 
+    console.log("Current users:", currentUsers.length);
+    console.log("Discord users:", targetUsers.length);
+
     if (!usersToRemove.length && !usersToAdd.length) {
       console.log("Nothing to do");
       return;
@@ -105,18 +111,56 @@ const main = async () => {
     const groupId = await discourse.getGroupId(discourseGroupName);
 
     if (usersToRemove.length) {
-      await discourse.removeGroupMembers(groupId, usersToRemove);
+      console.log(`Removing Discourse group ${groupId} members`);
+      const success = await discourse.removeGroupMembers(
+        groupId,
+        usersToRemove
+      );
+      console.log("Success?", success);
     }
 
     if (usersToAdd.length) {
-      await discourse.addGroupMembers(groupId, usersToAdd);
+      console.log(`Adding Discourse group ${groupId} members`);
+      const success = await discourse.addGroupMembers(groupId, usersToAdd);
+      console.log("Success?", success);
     }
   });
+
+  const usersToFixNames = diff({
+    arr1: discourseDiscordUsers,
+    key1: "discourseName",
+    arr2: discordMembers,
+    key2: "nickname",
+  }).map(({ discourseUsername, discourseName, discordId }) => ({
+    discourseUsername,
+    discourseName,
+    discordName: discordMembers.find(({ id }) => id === discordId)?.nickname,
+  }));
+
+  console.log(
+    "\nUsers to fix real names:",
+    usersToFixNames
+      .map(({ discourseUsername }) => discourseUsername)
+      .join(", ") || "none"
+  );
+  if (usersToFixNames.length) {
+    await Promise.mapSeries(
+      usersToFixNames,
+      async ({ discourseUsername, discourseName, discordName }) => {
+        console.log(`${discourseUsername}: ${discourseName} -> ${discordName}`);
+        const success = await discourse.updateUserFullName(
+          discourseUsername,
+          discordName
+        );
+        console.log("Success?", success);
+      }
+    );
+  }
 
   discordClient.destroy();
   discourse.cleanup();
 
-  console.log("All done");
+  console.log("\n\nAll done");
 };
 
 (async () => {

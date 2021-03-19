@@ -67,18 +67,18 @@ exports.fetchAllGroups = () =>
 
 exports.fetchDiscordUsers = async () => {
   const data = await db("user_associated_accounts")
-    .select("provider_uid", "extra", "username")
+    .select("provider_uid", "extra", "users.username", "users.name")
     .where({ provider_name: "discord" })
     .leftJoin("users", "user_associated_accounts.user_id", "users.id");
-  return data.map(({ provider_uid, extra, username }) => ({
+  return data.map(({ provider_uid, extra, username, name }) => ({
     discourseUsername: username,
+    discourseName: name,
     discordId: provider_uid,
     ...extra.raw_info,
   }));
 };
 
 exports.deleteGroup = async (id) => {
-  console.log(`Deleting Discourse group ${id}`);
   try {
     await exports.request({
       url: `/admin/groups/${id}.json`,
@@ -91,7 +91,6 @@ exports.deleteGroup = async (id) => {
 };
 
 exports.createGroup = async (name) => {
-  console.log(`Creating Discourse group ${name}`);
   try {
     await exports.request({
       url: `/admin/groups.json`,
@@ -119,10 +118,10 @@ exports.getGroupId = async (name) => {
 exports.getGroupMembers = async (name) => {
   try {
     const data = await exports.getWithPaging(
-      `/groups/${name}/members.json?limit=20`,
+      `/groups/${name}/members.json?limit=50`,
       {
         startPage: 0,
-        pageInc: 20,
+        pageInc: 50,
         pageParamName: "offset",
         mapper: (data) => data.members,
       }
@@ -135,7 +134,6 @@ exports.getGroupMembers = async (name) => {
 };
 
 exports.removeGroupMembers = async (groupId, usernames) => {
-  console.log(`Removing Discourse group ${groupId} members`);
   try {
     const data = await exports.request({
       url: `/groups/${groupId}/members.json`,
@@ -152,13 +150,28 @@ exports.removeGroupMembers = async (groupId, usernames) => {
 };
 
 exports.addGroupMembers = async (groupId, usernames) => {
-  console.log(`Adding Discourse group ${groupId} members`);
   try {
     const data = await exports.request({
       url: `/groups/${groupId}/members.json`,
       method: "PUT",
       data: {
         usernames: usernames.join(","),
+      },
+    });
+    return data.success;
+  } catch (err) {
+    console.error("ERROR", err?.response?.data?.errors || err);
+    throw err;
+  }
+};
+
+exports.updateUserFullName = async (username, fullName) => {
+  try {
+    const data = await exports.request({
+      url: `/u/${username}.json`,
+      method: "PUT",
+      data: {
+        name: fullName,
       },
     });
     return data.success;
