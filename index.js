@@ -69,7 +69,7 @@ const main = async () => {
 
   await Promise.mapSeries(groupsToRemove, ({ id }) => {
     console.log(`Deleting Discourse group ${id}`);
-    discourse.deleteGroup(id);
+    await discourse.deleteGroup(id);
   });
   await Promise.mapSeries(groupsToCreate, ({ name }) => {
     console.log(`Creating Discourse group ${name}`);
